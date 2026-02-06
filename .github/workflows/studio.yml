@@ -1,0 +1,42 @@
+name: Studio CI/CD
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - workspace/studio/**
+      - .github/workflows/studio.yml
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    name: Lint, Test, Build & Deploy
+    runs-on: ubuntu-latest
+    
+    defaults:
+      run:
+        working-directory: ./workspace/studio
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: workspace/studio/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint Code
+        run: npm run lint
+
+      - name: Build Studio
+        run: npm run build
+
+      - name: Deploy to Sanity
+        run: npm run deploy
+        env:
+          SANITY_AUTH_TOKEN: ${{ secrets.SANITY_AUTH_TOKEN }} ## Foi configurado no GitHub Secrets com token de acesso pessoal do Sanity
