@@ -1,71 +1,7 @@
 import { defineType, defineField } from 'sanity'
 
-const itemVariation = {
-    type: 'object',
-    fields: [
-        defineField({
-            name: 'name',
-            title: 'Nome',
-            type: 'string',
-            validation: (Rule) => Rule.required(),
-        }),
-        defineField({
-            name: 'price',
-            title: 'Preço',
-            type: 'number',
-            validation: (Rule) => Rule.required().positive(),
-        }),
-        defineField({
-            name: 'serves',
-            title: 'Serve (pessoas)',
-            type: 'number',
-        }),
-    ],
-    preview: {
-        select: {
-            name: 'name',
-            price: 'price',
-        },
-        prepare({ name, price }: Record<string, any>) {
-            return {
-                title: name,
-                subtitle: price ? `R$ ${price.toFixed(2)}` : 'Sem preço',
-            }
-        },
-    },
-}
-
-const addon = {
-    type: 'object',
-    fields: [
-        defineField({
-            name: 'name',
-            title: 'Adicional',
-            type: 'string',
-            validation: (Rule) => Rule.required(),
-        }),
-        defineField({
-            name: 'price',
-            title: 'Valor',
-            type: 'number',
-            validation: (Rule) => Rule.required(),
-        }),
-    ],
-    preview: {
-        select: {
-            name: 'name',
-            price: 'price',
-        },
-        prepare({ name, price }: Record<string, any>) {
-            return {
-                title: name,
-                subtitle: `+ R$ ${price.toFixed(2)}`,
-            }
-        },
-    },
-}
-
-const menuItem = {
+export default defineType({
+    name: 'menuItem',
     type: 'object',
     fieldsets: [
         {
@@ -136,7 +72,7 @@ const menuItem = {
             name: 'variations',
             title: 'Variações',
             type: 'array',
-            of: [itemVariation],
+            of: [{ type: 'itemVariation' }],
             validation: (Rule) => Rule.custom((variations, context) => {
                 const hasVariations = (context.parent as any)?.hasVariations
                 if (hasVariations && (!variations || variations.length === 0)) {
@@ -151,7 +87,7 @@ const menuItem = {
             name: 'addons',
             title: 'Adicionais',
             type: 'array',
-            of: [addon],
+            of: [{ type: 'addon' }],
             fieldset: 'details',
         }),
         defineField({
@@ -247,110 +183,6 @@ const menuItem = {
                         ? `R$ ${price.toFixed(2)}`
                         : 'Sem preço',
                 media: image,
-            }
-        },
-    },
-}
-
-export default defineType({
-    name: 'menuSection',
-    title: 'Seção do Cardápio',
-    type: 'document',
-    groups: [
-        { name: 'omnivore', title: 'Onívoros' },
-        { name: 'vegetarian', title: 'Vegetarianos' },
-        { name: 'vegan', title: 'Veganos' },
-    ],
-    fields: [
-        defineField({
-            name: 'sectionName',
-            title: 'Nome',
-            type: 'string',
-            validation: (Rule) => Rule.required(),
-        }),
-        defineField({
-            name: 'order',
-            title: 'Ordem',
-            type: 'number',
-            initialValue: 0,
-        }),
-        defineField({
-            name: 'enableFilter',
-            title: 'Separar por tipo de dieta',
-            type: 'boolean',
-            initialValue: false,
-        }),
-        defineField({
-            name: 'items',
-            title: 'Itens',
-            type: 'array',
-            of: [menuItem],
-            hidden: ({ document }) => !!document?.enableFilter,
-        }),
-        defineField({
-            name: 'itemsOmnivore',
-            title: 'Itens Onívoros',
-            type: 'array',
-            group: 'omnivore',
-            of: [menuItem],
-            hidden: ({ document }) => !document?.enableFilter,
-        }),
-        defineField({
-            name: 'itemsVegetarian',
-            title: 'Itens Vegetarianos',
-            type: 'array',
-            group: 'vegetarian',
-            of: [menuItem],
-            hidden: ({ document }) => !document?.enableFilter,
-        }),
-        defineField({
-            name: 'itemsVegan',
-            title: 'Itens Veganos',
-            type: 'array',
-            group: 'vegan',
-            of: [menuItem],
-            hidden: ({ document }) => !document?.enableFilter,
-        }),
-        defineField({
-            name: 'isActive',
-            title: 'Visível',
-            type: 'boolean',
-            description: 'Desmarque para ocultar do cardápio',
-            initialValue: true,
-        }),
-        defineField({
-            name: 'slug',
-            title: 'Slug',
-            type: 'slug',
-            options: {
-                source: 'sectionName',
-                maxLength: 96,
-            },
-            validation: (Rule) => Rule.required(),
-        }),
-    ],
-    orderings: [
-        {
-            title: 'Ordem',
-            name: 'orderAsc',
-            by: [{ field: 'order', direction: 'asc' }],
-        },
-        {
-            title: 'Nome (A-Z)',
-            name: 'nameAsc',
-            by: [{ field: 'sectionName', direction: 'asc' }],
-        },
-    ],
-    preview: {
-        select: {
-            title: 'sectionName',
-            order: 'order',
-            isActive: 'isActive',
-        },
-        prepare({ title, order, isActive }: Record<string, any>) {
-            return {
-                title: title || 'Sem nome',
-                subtitle: `Ordem: ${order ?? 0}${!isActive ? ' • Oculta' : ''}`,
             }
         },
     },
